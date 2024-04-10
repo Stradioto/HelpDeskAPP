@@ -4,6 +4,26 @@ import { StyleSheet, Text, View } from 'react-native';
 import HeadPage from './component/head';
 import LoginComponent from './component/login'
 import BottomPage from './component/bottom';
+import UserView from './component/genericuserview';
+import ItView from './component/genericitview';
+import ChatComponent from './component/chatcomponent';
+
+
+//----------Pages--------------------------
+
+//<LoginComponent /> : Login Page
+
+//<HeadPage /> : Header
+
+//<BottomPage /> : Bellow just in case
+
+//<UserView /> : Generic user view
+
+//<ItView /> : Generic IT view
+
+//< />
+
+//------------------------------------------
 
 export default function App() {
   return (
@@ -11,7 +31,7 @@ export default function App() {
       
         <HeadPage />
       
-        <LoginComponent />
+        <ChatComponent />
 
         <BottomPage />
 

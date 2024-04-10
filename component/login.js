@@ -5,12 +5,15 @@ class LoginComponent extends React.Component {
     return <div style={{
                         display: 'flex',
                         flexDirection: 'column',
-                        justifyContent: "flex-end",
+                        justifyContent: 'center',
                         //height: '100vh',
                         color: 'black',
                         fontSize: '32px',
-                        gap: '5vh',
-                        margin: 'auto'
+                        //gap: '5vh',
+                        //margin: 'auto'
+                        width: '100%',
+                        height: '100%',
+                        overflow: 'auto'
                       }}>  
                 <h2 style={{
                         //height: '10vh',
@@ -21,16 +24,17 @@ class LoginComponent extends React.Component {
                 <div id='fields' style={{
                                         display: 'flex',
                                         flexDirection: 'column',
-                                        //justifyContent: 'center',
-                                        //alignItems: 'center',
+                                        justifyContent: 'center',
+                                        alignItems: 'center',
                                         //height: '10vh'
                                         }}>
-                        <input style={{width: '100%',
+                        <input style={{width: '40%',
+
                                        padding: '12px 20px',
                                        margin: '8px 0',
                                        boxSizing: 'border-box',
                                        }}/>
-                        <input style={{width: '100%',
+                        <input style={{width: '40%',
                                        padding: '12px 20px',
                                        margin: '8px 0',
                                        boxSizing: 'border-box',
@@ -41,7 +45,9 @@ class LoginComponent extends React.Component {
                                        display: 'inline-flex',
                                        flexDirection: 'row',
                                        gap: '20px',
-                                       padding: '12px 20px'
+                                       padding: '12px 20px',
+                                       justifyContent: 'center',
+                                        alignItems: 'center',
                                        }}> 
                     <button style={{
                                     backgroundColor: 'orange',

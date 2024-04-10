@@ -10,7 +10,7 @@ class BottomPage extends React.Component {
                         width: '100%',
                         backgroundColor: 'grey'
                         }}>  
-              <h2></h2>
+              <h2>https://github.com/Stradioto</h2>
            </div>
   }
 }
