@@ -1,45 +1,126 @@
 import React, { Component } from 'react';
-import SupportForm from './supportForm'; // Import the component you want to load
+import SupportForm from './supportForm';
+import { getAuth, signOut } from 'firebase/auth';
+import { getFirestore, collection, addDoc, query, where, getDocs } from 'firebase/firestore';
 
 class UserView extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      showFAQ: true, // Initially, the FAQ text is hidden
-      showSupportForm: false, // Initially, the support form is hidden
-      showOpenedTickets: false
+      showFAQ: true, 
+      showSupportForm: false, 
+      showOpenedTickets: false,
+      tickets: [], // Hold the fetched tickets
+      name: '',
+      position: '',
+      employeenumber: '',
+      userInfoLoaded: false,
+      userInfo: null
     };
+  }
+
+  componentDidMount() {
+    this.loadUserInfo();
+  }
+
+  loadUserInfo = async () => {
+    const auth = getAuth();
+    const user = auth.currentUser;
+    if (user) {
+      const db = getFirestore();
+      const userInfoRef = collection(db, 'userInfo');
+      const q = query(userInfoRef, where('email', '==', user.email));
+      const querySnapshot = await getDocs(q);
+
+      if (!querySnapshot.empty) {
+        const userInfo = querySnapshot.docs[0].data();
+        this.setState({
+          userInfoLoaded: true,
+          userInfo: userInfo,
+          name: userInfo.name,
+          position: userInfo.position,
+          employeenumber: userInfo.employeenumber
+        });
+      }
+    }
   }
 
   handleFAQButtonClick = () => {
     this.setState({
       showFAQ: true,
-      showSupportForm: false, // Hide the support form when FAQ button is clicked
+      showSupportForm: false,
       showOpenedTickets: false
     });
   }
 
   handleSupportFormButtonClick = () => {
     this.setState({
-      showFAQ: false, // Hide the FAQ text when support form button is clicked
+      showFAQ: false, 
       showSupportForm: true,
       showOpenedTickets: false
     });
-
-    
   }
 
-  handleOpenedTicketsButtonClick = () => {
-    this.setState({
-      showFAQ: false, // Hide the FAQ text when support form button is clicked
-      showSupportForm: false,
-      showOpenedTickets: true
-    });
+  handleOpenedTicketsButtonClick = async () => {
+    const auth = getAuth();
+    const user = auth.currentUser;
+    if (user) {
+      const db = getFirestore();
+      const ticketsRef = collection(db, 'supportRequests');
+      const q = query(ticketsRef, where('name', '==', user.email));
+      const querySnapshot = await getDocs(q);
+      const tickets = querySnapshot.docs.map(doc => doc.data());
 
-    
+      this.setState({
+        showFAQ: false,
+        showSupportForm: false,
+        showOpenedTickets: true,
+        tickets: tickets 
+      });
+    }
+  }
+
+  handleLogout = async () => {
+    const auth = getAuth();
+    try {
+      await signOut(auth);
+      console.log('User logged out');
+    } catch (error) {
+      console.error('Error logging out:', error);
+    }
+  }
+
+  handleChange = (event) => {
+    const { name, value } = event.target;
+    this.setState({ [name]: value });
+  }
+
+  handleFillInfo = async () => {
+    const auth = getAuth();
+    const user = auth.currentUser;
+    if (user) {
+      const db = getFirestore();
+      const userData = {
+        email: user.email,
+        name: this.state.name,
+        position: this.state.position,
+        employeenumber: this.state.employeenumber
+      };
+      try {
+        await addDoc(collection(db, 'userInfo'), userData);
+        console.log('User info added successfully');
+        this.setState({
+          userInfoLoaded: true,
+          userInfo: userData
+        });
+      } catch (error) {
+        console.error('Error adding user info:', error);
+      }
+    }
   }
 
   render() {
+    const { userInfoLoaded, userInfo } = this.state;
     return (
       <div style={{
         display: 'inline-flex',
@@ -61,8 +142,53 @@ class UserView extends React.Component {
           <button onClick={this.handleFAQButtonClick}>FAQ</button>
           <button onClick={this.handleSupportFormButtonClick}>Open Support Ticket</button>
           <button onClick={this.handleOpenedTicketsButtonClick}>Opened Tickets</button>
-          <p> [log-in information]<br/>Name<br/>Position<br/>Employee number </p>
-          <p>Emergency Support:<br/>555-555-55</p>
+          
+          <div> [log-in information]<br/>
+            {userInfoLoaded && userInfo ? (
+              <div>
+                <p><strong>Name:</strong> {userInfo.name}</p>
+                <p><strong>Position:</strong> {userInfo.position}</p>
+                <p><strong>Employee Number:</strong> {userInfo.employeenumber}</p>
+              </div>
+            ) : (
+              <div style={{width: '80%',
+                border: '2px solid',
+                margin: '20px'}}>
+                Name: <input
+                        name="name"
+                        placeholder='Name'
+                        style={{ width: '71%', height: '20%', padding: '12px 20px', 
+                        margin: '8px 0', boxSizing: 'border-box', marginLeft: '12px' }}
+                        value={this.state.name}
+                        onChange={this.handleChange}
+                      />
+                <br/>Position: <input
+                        name="position"
+                        placeholder='Position'
+                        style={{ width: '70%', height: '20%', padding: '12px 20px', 
+                        margin: '8px 0', boxSizing: 'border-box' }}
+                        value={this.state.position}
+                        onChange={this.handleChange}
+                      /> 
+                <br/>Number: <input
+                        name="employeenumber"
+                        placeholder='Employee Number'
+                        style={{ width: '70%', height: '20%', padding: '12px 20px', 
+                        margin: '8px 0', boxSizing: 'border-box' }}
+                        value={this.state.employeenumber}
+                        onChange={this.handleChange}
+                      />
+                      <br></br>
+                <button onClick={this.handleFillInfo}>Fill info and click here to save</button>
+              </div>
+              
+            )}
+            <p>Emergency Support:<br/>555-555-55</p>
+          </div>
+          
+          
+          
+          <button onClick={this.handleLogout}>Logout</button>
         </div>
 
         <div style={{
@@ -114,7 +240,32 @@ class UserView extends React.Component {
 
           {this.state.showSupportForm && <SupportForm />}
           
-          {this.state.showOpenedTickets && (<p>Opened tickets should appear here</p>)}
+          {this.state.showOpenedTickets && (
+            <div>
+              <h2>Opened Tickets</h2>
+              {this.state.tickets.length > 0 ? (
+                <div>
+                  {this.state.tickets.map((ticket, index) => (
+                    <div key={index} style={{
+                      border: '1px solid gray',
+                      borderRadius: '5px',
+                      padding: '10px',
+                      margin: '10px 0',
+                      boxShadow: '0 4px 8px rgba(0,0,0,0.1)'
+                    }}>
+                      <p><strong>Email:</strong> {ticket.name}</p>
+                      <p><strong>Workplace:</strong> {ticket.workplace}</p>
+                      <p><strong>Nature of Contact:</strong> {ticket.natureOfContact}</p>
+                      <p><strong>Severity:</strong> {ticket.severity}</p>
+                      <p><strong>Description:</strong> {ticket.description}</p>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p>No opened tickets found.</p>
+              )}
+            </div>
+          )}
         </div>
       </div>
     );
